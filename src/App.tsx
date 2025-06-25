@@ -22,18 +22,30 @@ function App() {
       </Box>
 
       <Typography variant="h5" gutterBottom>
-        Calculator with Custom Title:
+        Default Themed Calculator
       </Typography>
-      {/* Use the component with a custom title */}
-      <ScientificCalculator title="My Awesome Calculator" />
+      <ScientificCalculator title="Global Theme" />
 
       <Box sx={{ my: 5 }} />
 
       <Typography variant="h5" gutterBottom>
-        Calculator with Title Omitted:
+        Component-Scoped "Oceanic" Theme
       </Typography>
-      {/* Use the component without the title prop */}
-      <ScientificCalculator />
+      <ScientificCalculator title="Oceanic Theme" themeName="oceanic" />
+
+      <Box sx={{ my: 5 }} />
+
+      <Typography variant="h5" gutterBottom>
+        Component-Scoped "Sunset" Theme
+      </Typography>
+      <ScientificCalculator title="Sunset Theme" themeName="sunset" />
+
+      <Box sx={{ my: 5 }} />
+
+      <Typography variant="h5" gutterBottom>
+        Component-Scoped "Forest" Theme
+      </Typography>
+      <ScientificCalculator title="Forest Theme" themeName="forest" />
     </Container>
   );
 }

@@ -1,62 +1,45 @@
-import React, { useState } from "react";
-import { Button, Grid, Paper, TextField, Typography } from "@mui/material";
+import React, { useState, useMemo } from "react";
+import {
+  Button,
+  Grid,
+  Paper,
+  TextField,
+  Typography,
+  ThemeProvider,
+  createTheme,
+  useTheme,
+} from "@mui/material";
 import * as math from "mathjs";
+import { ThemeName, themes } from "./themes";
 
 // Define the props interface
 interface ScientificCalculatorProps {
   title?: string;
+  themeName?: ThemeName;
 }
 
 const ScientificCalculator: React.FC<ScientificCalculatorProps> = ({
   title,
+  themeName,
 }) => {
   const [input, setInput] = useState("");
+  const globalTheme = useTheme(); // Hook into the global theme to get light/dark mode
 
-  const handleClick = (value: string) => {
-    setInput((prev) => prev + value);
-  };
+  const calculatorTheme = useMemo(() => {
+    if (!themeName) return null; // Return null if no themeName is provided
 
-  const handleClear = () => {
-    setInput("");
-  };
+    const mode = globalTheme.palette.mode;
+    const selectedPalette = themes[themeName][mode];
 
-  const handleCalculate = () => {
-    try {
-      const result = math.evaluate(input);
-      setInput(result.toString());
-    } catch (error) {
-      setInput("Error");
-    }
-  };
+    return createTheme({
+      palette: {
+        mode,
+        ...selectedPalette,
+      },
+    });
+  }, [themeName, globalTheme.palette.mode]);
 
-  const buttons = [
-    "7",
-    "8",
-    "9",
-    "/",
-    "4",
-    "5",
-    "6",
-    "*",
-    "1",
-    "2",
-    "3",
-    "-",
-    "0",
-    ".",
-    "=",
-    "+",
-    "sin(",
-    "cos(",
-    "tan(",
-    "sqrt(",
-    "log(",
-    "exp(",
-    "(",
-    ")",
-  ];
-
-  return (
+  const CalculatorContent = () => (
     <Paper
       elevation={3}
       sx={{
@@ -67,7 +50,6 @@ const ScientificCalculator: React.FC<ScientificCalculatorProps> = ({
         bgcolor: "background.paper",
       }}
     >
-      {/* Conditionally render the title only if the prop is provided */}
       {title && (
         <Typography variant="h6" sx={{ mb: 2, color: "text.primary" }}>
           {title}
@@ -84,7 +66,33 @@ const ScientificCalculator: React.FC<ScientificCalculatorProps> = ({
         sx={{ mb: 2 }}
       />
       <Grid container spacing={1}>
-        {buttons.map((btn) => (
+        {/* ... (rest of the buttons logic, no changes needed here) ... */}
+        {[
+          "7",
+          "8",
+          "9",
+          "/",
+          "4",
+          "5",
+          "6",
+          "*",
+          "1",
+          "2",
+          "3",
+          "-",
+          "0",
+          ".",
+          "=",
+          "+",
+          "sin(",
+          "cos(",
+          "tan(",
+          "sqrt(",
+          "log(",
+          "exp(",
+          "(",
+          ")",
+        ].map((btn) => (
           <Grid item xs={3} key={btn}>
             <Button
               fullWidth
@@ -92,11 +100,8 @@ const ScientificCalculator: React.FC<ScientificCalculatorProps> = ({
               color={/[0-9.]/.test(btn) ? "primary" : "secondary"}
               sx={{ height: "100%" }}
               onClick={() => {
-                if (btn === "=") {
-                  handleCalculate();
-                } else {
-                  handleClick(btn);
-                }
+                if (btn === "=") handleCalculate();
+                else handleClick(btn);
               }}
             >
               {btn}
@@ -116,6 +121,29 @@ const ScientificCalculator: React.FC<ScientificCalculatorProps> = ({
       </Grid>
     </Paper>
   );
+
+  const handleCalculate = () => {
+    try {
+      setInput(math.evaluate(input).toString());
+    } catch (error) {
+      setInput("Error");
+    }
+  };
+
+  const handleClear = () => setInput("");
+  const handleClick = (value: string) => setInput((prev) => prev + value);
+
+  // If a custom theme is created, wrap the content in a ThemeProvider.
+  // Otherwise, render it directly to use the global theme.
+  if (calculatorTheme) {
+    return (
+      <ThemeProvider theme={calculatorTheme}>
+        <CalculatorContent />
+      </ThemeProvider>
+    );
+  }
+
+  return <CalculatorContent />;
 };
 
 export default ScientificCalculator;
