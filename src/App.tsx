@@ -1,18 +1,22 @@
-import React from 'react';
-import { Container, Button, Box, Typography } from '@mui/material';
-import Brightness4Icon from '@mui/icons-material/Brightness4';
-import Brightness7Icon from '@mui/icons-material/Brightness7';
-import ScientificCalculator from './ScientificCalculator';
-import { useThemeContext } from './ThemeContext';
+import React from "react";
+import { Container, Button, Box, Typography } from "@mui/material";
+import Brightness4Icon from "@mui/icons-material/Brightness4";
+import Brightness7Icon from "@mui/icons-material/Brightness7";
+import ScientificCalculator from "./ScientificCalculator";
+import { useThemeContext } from "./ThemeContext";
 
 function App() {
   const { toggleTheme, isDarkMode } = useThemeContext();
 
   return (
     <Container sx={{ py: 4 }}>
-      <Box sx={{ display: 'flex', justifyContent: 'flex-end', mb: 4 }}>
+      <Box sx={{ display: "flex", justifyContent: "flex-end", mb: 4 }}>
         <Button variant="outlined" onClick={toggleTheme}>
-          {isDarkMode ? <Brightness7Icon sx={{ mr: 1 }} /> : <Brightness4Icon sx={{ mr: 1 }} />}
+          {isDarkMode ? (
+            <Brightness7Icon sx={{ mr: 1 }} />
+          ) : (
+            <Brightness4Icon sx={{ mr: 1 }} />
+          )}
           Toggle Theme
         </Button>
       </Box>
