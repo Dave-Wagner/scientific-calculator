@@ -3,7 +3,7 @@ import {
   Button,
   Grid,
   Paper,
-  TextField,
+  Box,
   Typography,
   ThemeProvider,
   createTheme,
@@ -12,54 +12,92 @@ import {
 import * as math from "mathjs";
 import { ThemeName, themes } from "./themes";
 
-// Define the props interface
+// Define the props interface with the new callback
 interface ScientificCalculatorProps {
   title?: string;
   themeName?: ThemeName;
+  onCalculate?: (result: string, expression: string) => void;
 }
 
 const ScientificCalculator: React.FC<ScientificCalculatorProps> = ({
   title,
   themeName,
+  onCalculate, // Destructure the new prop
 }) => {
-  const [input, setInput] = useState("");
-  const globalTheme = useTheme(); // Hook into the global theme to get light/dark mode
+  const [expression, setExpression] = useState("");
+  const [display, setDisplay] = useState("0");
+  const [isResult, setIsResult] = useState(false);
 
-  // Memoize the theme creation
+  const globalTheme = useTheme();
+
   const calculatorTheme = useMemo(() => {
     if (!themeName) return null;
-
     const mode = globalTheme.palette.mode;
     const selectedPalette = themes[themeName][mode];
-
-    return createTheme({
-      palette: {
-        mode,
-        ...selectedPalette,
-      },
-    });
+    return createTheme({ palette: { mode, ...selectedPalette } });
   }, [themeName, globalTheme.palette.mode]);
 
-  // --- LOGIC ---
+  // --- Logic Functions ---
+
+  const handleClear = () => {
+    setExpression("");
+    setDisplay("0");
+    setIsResult(false);
+  };
+
+  const handleDelete = () => {
+    if (isResult) return;
+    setDisplay((prev) => (prev.length > 1 ? prev.slice(0, -1) : "0"));
+  };
+
+  const handleNumberClick = (value: string) => {
+    if (isResult) {
+      setExpression("");
+      setDisplay(value);
+      setIsResult(false);
+      return;
+    }
+    if (value === "." && display.includes(".")) return;
+    setDisplay((prev) =>
+      prev === "0" && value !== "." ? value : prev + value
+    );
+  };
+
+  const handleOperatorClick = (value: string) => {
+    setExpression((prev) => prev + display + " " + value + " ");
+    setDisplay("0");
+    setIsResult(false);
+  };
+
   const handleCalculate = () => {
+    // Define the expression early to use it in both try/catch for the callback
+    const finalExpression = expression + display;
     try {
-      setInput(math.evaluate(input).toString());
+      const result = math.evaluate(finalExpression).toString();
+      setDisplay(result);
+      setExpression(finalExpression + " =");
+      setIsResult(true);
+
+      // Call the callback on success
+      if (onCalculate) {
+        onCalculate(result, finalExpression);
+      }
     } catch (error) {
-      setInput("Error");
+      const errorMessage = "Error";
+      setDisplay(errorMessage);
+      setExpression("");
+      setIsResult(true);
+
+      // Call the callback on error, providing the failed expression
+      if (onCalculate) {
+        onCalculate(errorMessage, finalExpression);
+      }
     }
   };
 
-  const handleClear = () => setInput("");
-  const handleClick = (value: string) => setInput((prev) => prev + value);
+  // --- UI Component ---
 
-  // New function for handling backspace
-  const handleDelete = () => {
-    setInput((prev) => prev.slice(0, -1));
-  };
-
-  // --- UI ---
   const CalculatorContent = () => {
-    // Added "DEL" to the button layout
     const buttons = [
       "(",
       ")",
@@ -85,7 +123,6 @@ const ScientificCalculator: React.FC<ScientificCalculatorProps> = ({
       "cos(",
       "tan(",
       "sqrt(",
-      "exp(", // Added extra button to fill the grid, can be changed later
     ];
 
     return (
@@ -104,39 +141,49 @@ const ScientificCalculator: React.FC<ScientificCalculatorProps> = ({
             {title}
           </Typography>
         )}
-        <TextField
-          fullWidth
-          variant="outlined"
-          value={input}
-          inputProps={{
-            readOnly: true,
-            style: { textAlign: "right" },
+
+        <Box
+          sx={{
+            mb: 2,
+            p: 2,
+            bgcolor: "background.default",
+            borderRadius: 1,
+            textAlign: "right",
+            minHeight: "4em",
+            display: "flex",
+            flexDirection: "column",
+            justifyContent: "space-between",
           }}
-          sx={{ mb: 2 }}
-        />
+        >
+          <Typography variant="body2" color="text.secondary" noWrap>
+            {expression || " "}
+          </Typography>
+          <Typography variant="h4" color="text.primary">
+            {display}
+          </Typography>
+        </Box>
+
         <Grid container spacing={1}>
           {buttons.map((btn) => (
             <Grid item xs={3} key={btn}>
               <Button
                 fullWidth
                 variant="contained"
-                // Make DEL button a different color to stand out
                 color={
                   btn === "DEL"
                     ? "warning"
+                    : btn === "="
+                    ? "success"
                     : /[0-9.]/.test(btn)
                     ? "primary"
                     : "secondary"
                 }
                 sx={{ height: "100%" }}
                 onClick={() => {
-                  if (btn === "=") {
-                    handleCalculate();
-                  } else if (btn === "DEL") {
-                    handleDelete();
-                  } else {
-                    handleClick(btn);
-                  }
+                  if (btn === "=") handleCalculate();
+                  else if (btn === "DEL") handleDelete();
+                  else if (/[0-9.]/.test(btn)) handleNumberClick(btn);
+                  else handleOperatorClick(btn);
                 }}
               >
                 {btn}
