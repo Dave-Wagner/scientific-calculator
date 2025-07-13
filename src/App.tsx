@@ -8,29 +8,38 @@ import {
   Select,
   MenuItem,
   SelectChangeEvent,
+  Paper,
+  Typography,
 } from "@mui/material";
 import Brightness4Icon from "@mui/icons-material/Brightness4";
 import Brightness7Icon from "@mui/icons-material/Brightness7";
 import ScientificCalculator from "./ScientificCalculator";
 import { useThemeContext } from "./ThemeContext";
-import { availableThemes, ThemeName } from "./themes"; // Import the theme names
+import { availableThemes, ThemeName } from "./themes";
 
 function App() {
   const { toggleTheme, isDarkMode } = useThemeContext();
-
-  // State to hold the currently selected theme name. 'default' is a special value for the global theme.
   const [selectedTheme, setSelectedTheme] = useState<ThemeName | "default">(
     "default"
   );
+  // New state to store the last calculation from the callback
+  const [lastCalculation, setLastCalculation] = useState<{
+    result: string;
+    expression: string;
+  } | null>(null);
 
-  // Handler for the dropdown selection change
   const handleThemeChange = (
     event: SelectChangeEvent<typeof selectedTheme>
   ) => {
     setSelectedTheme(event.target.value as ThemeName | "default");
   };
 
-  // Capitalize the first letter of a string for display
+  // The callback function that will be passed to the calculator
+  const handleCalculationResult = (result: string, expression: string) => {
+    console.log("Calculation received:", { result, expression });
+    setLastCalculation({ result, expression });
+  };
+
   const capitalize = (s: string) => s.charAt(0).toUpperCase() + s.slice(1);
 
   return (
@@ -45,7 +54,6 @@ function App() {
           mb: 4,
         }}
       >
-        {/* Dropdown for theme selection */}
         <FormControl sx={{ m: 1, minWidth: 200 }} size="small">
           <InputLabel id="theme-select-label">Calculator Theme</InputLabel>
           <Select
@@ -66,7 +74,6 @@ function App() {
           </Select>
         </FormControl>
 
-        {/* Button to toggle light/dark mode */}
         <Button variant="outlined" onClick={toggleTheme}>
           {isDarkMode ? (
             <Brightness7Icon sx={{ mr: 1 }} />
@@ -83,9 +90,27 @@ function App() {
             ? "Global Theme"
             : `${capitalize(selectedTheme)} Theme`
         }
-        // Pass the selected theme name, or undefined if 'default' is chosen
         themeName={selectedTheme === "default" ? undefined : selectedTheme}
+        // Pass the callback function as a prop
+        onCalculate={handleCalculationResult}
       />
+
+      {/* New section to display the captured result */}
+      <Paper sx={{ mt: 4, p: 2, bgcolor: "background.default" }}>
+        <Typography variant="h6">Parent Component State</Typography>
+        <Typography variant="body1">
+          Last calculation captured by parent:
+        </Typography>
+        {lastCalculation ? (
+          <Typography variant="body2" component="pre" sx={{ mt: 1 }}>
+            {`${lastCalculation.expression} = ${lastCalculation.result}`}
+          </Typography>
+        ) : (
+          <Typography variant="body2" sx={{ mt: 1 }}>
+            No calculation performed yet.
+          </Typography>
+        )}
+      </Paper>
     </Container>
   );
 }
