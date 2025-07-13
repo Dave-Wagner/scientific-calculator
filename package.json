@@ -1,15 +1,9 @@
 {
-<<<<<<< HEAD
-  "name": "mui-scientific-calculator",
-  "version": "0.1.0",
-  "private": true,
-=======
   "name": "@dave-wagner/scientific-calculator",
   "version": "0.5.0",
   "private": false,
   "description": "A scientific calculator built with React and Material-UI, featuring advanced mathematical functions and a user-friendly interface.",
   "author": "Dave Wagner <20711387+Dave-Wagner@users.noreply.github.com>",
->>>>>>> dev
   "dependencies": {
     "@emotion/react": "^11.11.4",
     "@emotion/styled": "^11.11.5",
